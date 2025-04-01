@@ -1,1 +1,1 @@
-print "fetch successful"
+print("fetch successful")
