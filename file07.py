@@ -1,1 +1,1 @@
-fetch test
+echo "fetch successful"
