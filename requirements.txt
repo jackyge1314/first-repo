@@ -1,0 +1,7 @@
+fastapi>=0.68.0
+uvicorn>=0.15.0
+pdfminer.six>=20221105
+python-Levenshtein>=0.21.0
+langchain>=0.0.200
+langchain-deepseek
+python-multipart>=0.0.6
