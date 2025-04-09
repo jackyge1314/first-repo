@@ -27,34 +27,41 @@ def validate_report_type(text: str, example_text: str) -> bool:
     return similarity >= 0.7
 
 def process_with_llm(text: str, example_text: str, example_json: Dict) -> Dict:
-    # 构建对话历史
+    # 1. 传参获取文件
+    # 2. 构建对话历史
     chat_history = [
         ("user", f"这是一份示例报告:\n{example_text}"),
+        #("assistant", f"明白了，这份报告的结构化格式是:\n{json.dumps(example_json, ensure_ascii=False, indent=2)}"),   # langchain的 ChatPromptTemplate 中{}默认用于标识占位符（如{variable_name}），所以必须添加.replace...
         ("assistant", f"明白了，这份报告的结构化格式是:\n{json.dumps(example_json, ensure_ascii=False, indent=2).replace('{', '{{').replace('}', '}}')}"),
     ]
     
-    # 构建提示模板
+    # 3. 构建提示模板
     prompt = ChatPromptTemplate.from_messages([
         ("system", "你是专业的医疗报告结构化助手，请将输入的医疗报告按照示例的格式进行结构化处理。"),
-        *chat_history,
-        ("human", f"请按照这个格式处理这份新报告，不要增加特殊标识:\n{text}")
+        *chat_history,  # 注入历史对话
+        ("human", f"请按照这个格式处理这份新报告，不要增加特殊标识（如```json ```等):\n{text}")  # 用户最新输入
     ])
-    
-    # 初始化模型
+
+    # 打印{json.dumps(example_json, ensure_ascii=False, indent=2).replace('{', '{{').replace('}', '}}')}")内容
+    #print(f"提示模板内容: {prompt.messages}")
+
+    # 4. 初始化模型和流水线
     llm = ChatDeepSeek(
         model="deepseek-chat",
         temperature=0,
-        max_tokens=4096,
-        timeout=30,
-        max_retries=3
+        max_tokens=4096,  # 明确设置最大token数
+        timeout=30,       # 设置合理超时
+        max_retries=3     # 适当增加重试次数
     )
     
-    # 构建处理链并执行
+    # 5. 构建处理链并执行
     chain = prompt | llm | StrOutputParser()
     
     try:
+        logger.info(f"PROMPT内容为: {prompt.messages}")
         result = chain.invoke({})
         logger.info(f"LLM返回的原始内容: {result}") # jackyge tst 2025-04-08
+        #return result
         return json.loads(result)
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=500, detail=f"输出结果解析失败: {str(e)}")
