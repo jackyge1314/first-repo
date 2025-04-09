@@ -1,9 +1,0 @@
-第3个创建的文件
-jjj
-16483100e9531418a990457e3979d91a4f4feac1
-<<<<<<< HEAD
-7th redify
-haha
-=======
-7th redify
->>>>>>> c067938 (9th redify)
